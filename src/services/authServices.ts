@@ -1,6 +1,7 @@
 import { UserDto } from "dto/userDto";
 import { AppDataSource } from "../config/datasource";
 import { User } from "../entities/userEntities";
+import { Role } from "../enums/userEnums";
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -16,7 +17,24 @@ export class AuthService{
         if (!IsValid) {
             throw new Error("Invalid Password")
         }
-        const token = jwt.sign({ id: user.id, email: user.email }, "SECRET_KEY", { expiresIn: "1h" });
-        return token;
+        const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, "Kachi5599" as string, { expiresIn: "1h" });
+        return (token);
+    }
+
+    async seedAdmin(userDto: UserDto) {
+        const admin = await this.UserRepository.findOneBy({email: userDto.email});
+        if(admin) {
+            console.log("Admin already exists");
+            return;
+        }
+        const hashedPassword = await bcrypt.hash(userDto.password, 10);
+        const superAdmin = new User();
+        superAdmin.email = userDto.email;
+        superAdmin.firstname = userDto.firstname;
+        superAdmin.lastname = userDto.lastname;
+        superAdmin.password = hashedPassword;
+        superAdmin.role = Role.SUPER_ADMIN
+
+        await this.UserRepository.save(superAdmin);
     }
 }

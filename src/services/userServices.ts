@@ -1,3 +1,4 @@
+import { Role } from "../enums/userEnums";
 import { AppDataSource } from "../config/datasource";
 import { UserDto } from "../dto/userDto";
 import { User } from "../entities/userEntities";
@@ -6,9 +7,16 @@ const bcrypt = require ("bcryptjs")
 export class UserService{
     private UserRepository = AppDataSource.getRepository(User)
 
-    async create(userDto: UserDto):Promise<User> {
-        userDto.password = await bcrypt.hash(userDto.password, 5)
-        const user = this.UserRepository.create(userDto)
+    async create(userDto: UserDto, role: Role, requester?: Role):Promise<User> {
+        if((role === Role.SUPER_ADMIN || role === Role.ADMIN) && requester !== Role.SUPER_ADMIN){
+            throw new Error("Request failed")
+        }
+        const existingUser = await this.UserRepository.findOneBy({email: userDto.email})
+        if(existingUser){
+            throw new Error("user already exists")
+        }
+        userDto.password = await bcrypt.hash(userDto.password, 10)
+        const user = this.UserRepository.create({...userDto, role})
         return await this.UserRepository.save(user)
     }
 

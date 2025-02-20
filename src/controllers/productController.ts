@@ -30,11 +30,18 @@ export class ProductController {
         }
     }
 
-    public getProductsById = async(req: Request, res: Response) => {
+    public getProductsById = async(req: Request, res: Response): Promise<void> => {
+        const {id} = req.params;
+        const productId = parseInt(id)
+        if (isNaN(productId)) {
+            res.status(400).json({ message: "Invalid product ID" });
+            return;
+        }
         try{
-            const product = await this.productService.getById(parseInt(req.params.productId))
+            const product = await this.productService.getById(productId);
             if(!product) {
-                return res.status(404).json({message: 'product not found'})
+                res.status(404).json({message: 'product not found'})
+                return;
             }
             res.status(200).json(product)
         }
@@ -47,7 +54,7 @@ export class ProductController {
         try{
             const product = await this.productService.getByName(req.params.name)
             if (!product) {
-                return res.status(404).json({message: 'product not found'})
+                res.status(404).json({message: 'product not found'})
             }
             res.status(200).json(product)
         }
@@ -62,7 +69,8 @@ export class ProductController {
             const id = parseInt(req.params.id)
             const product = await this.productService.update(id, productDto)
             if (!product) {
-                return res.status(404).json({message: 'product not found'})
+                res.status(404).json({message: 'product not found'})
+                return;
             }
             res.status(201).json(product)
         }
@@ -71,11 +79,12 @@ export class ProductController {
         }
     }
 
-    public deleteProduct = async(req:Request, res:Response) => {
+    public deleteProduct = async(req:Request, res:Response): Promise<void> => {
         try{
             const product = await this.productService.delete(parseInt(req.params.id))
             if(!product) {
-                return res.status(404).json({message: 'product not found'})
+                res.status(404).json({message: 'product not found'})
+                return;
             }
             res.status(200).json(product)
         }

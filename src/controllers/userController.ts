@@ -1,17 +1,21 @@
+import { Role } from "enums/userEnums";
 import { UserDto } from "../dto/userDto";
 import { UserService } from "../services/userServices";
 import { Request, Response } from "express";
 
 const userService = new UserService();
 
-export const createUser = async (req: Request, res: Response) => {
+export const createUser = async (req: Request, res: Response): Promise<void> => {
     try{
         const userDto: UserDto = req.body;
-        const user = await userService.create(userDto);
+        const role: Role = req.body.role;
+        const user = await userService.create(userDto, role);
         res.status(201).json(user);
+        return;
     }
     catch(error:any) {
         res.status(400).json({message: error.message})
+        return;
     }
 }
 

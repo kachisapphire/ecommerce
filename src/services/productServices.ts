@@ -1,7 +1,7 @@
 import { AppDataSource } from "../config/datasource";
 import { ProductDto } from "../dto/productDto";
 import { Products } from "../entities/productEntities";
-import { Like } from "typeorm";
+import { ILike, Like } from "typeorm";
 
 export class ProductServices{
     private productRepository = AppDataSource.getRepository(Products)
@@ -28,7 +28,7 @@ export class ProductServices{
 
     async getByName(name: string): Promise<Products[]> {
         const products = await this.productRepository.find({
-            where: {productName: Like(`%${name}`)}
+            where: {productName: ILike(`%${name}%`)}
         })
         if(!products){
             throw new Error(`${name} not found`)
